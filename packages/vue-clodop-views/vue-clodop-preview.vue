@@ -5,23 +5,6 @@
 </template>
 
 <script>
-// function parseFunc(data) {
-//   if (typeof data === "function") {
-//     return data.toString().replaceAll(/\s+/g, " ").replaceAll("\n", " ");
-//   } else if (typeof data === "object") {
-//     for (const key in data) {
-//       data[key] = parseFunc(data[key]);
-//     }
-//   }
-//   return data;
-// }
-
-// function parseFunc(str) {
-//   let _ = null;
-//   eval(`_ = ${str}`);
-//   return _;
-// }
-
 function parseData(dataObj) {
   if (dataObj == null) return null;
   const data = {};
@@ -48,42 +31,26 @@ function parseData(dataObj) {
   return data;
 }
 
-function parseRender2(domNode) {
-  debugger;
-  Object.keys(domNode).forEach((el) => {
-    console.log("handling .... ", el);
-    const middle = {};
-    const children = [];
-    if ("style" in domNode[el]) middle.style = domNode[el].style;
-    if ("class" in domNode[el]) middle.class = domNode[el].class;
-    if ("children" in domNode[el]) {
-      console.log("handle children", domNode[el].children);
-      if (typeof domNode[el].children == "string") {
-        children.push(domNode[el].children[key]);
-      } else {
-        Object.keys(domNode[el].children).forEach((key) => {
-          if (typeof domNode[el].children[key] == "string") {
-            children.push(domNode[el].children[key]);
-          } else {
-            children.push(parseRender(domNode[el].children[key]));
-          }
-        });
-      }
-    }
-  });
-  return `h(${el}, ${middle}, ${children})`;
+function parseStr(str, hasVariable = false) {
+  if (!hasVariable) return str;
+  console.log("parseStr", str);
+  let _ = "";
+  eval("_ = `"+str+"`");
+  return _;
 }
 
 function parserRender(domArray, h) {
-  console.log("parsing ....", domArray, h);
-  // if (typeof domArray[2] == "string" || domArray[2] == null) return domArray[2];
   const currentLevel = [domArray[0], domArray[1], []];
   if (Array.isArray(domArray[2])) {
     domArray[2].forEach((da) => {
       currentLevel[2].push(parserRender(da, h));
     });
   } else {
-    currentLevel[2] = domArray[2]
+    currentLevel[2] = parseStr(domArray[2], /\$\{.*\}/.test(domArray[2]));
+    // currentLevel[2] = domArray[2].replaceAll(/\+\+\+\$/g, "\$");
+    // if (domArray[2].indexOf("{{{")) {
+    //   currentLevel[2] = domArray[2].replaceAll(/\{\{\{/g, "\$");
+    // }
   }
   return h(...currentLevel);
 }
@@ -102,7 +69,6 @@ export default {
     },
   },
   data() {
-    // test.render = test.render.toString().replaceAll(/\s+/g, ' ').replaceAll('\n',' ')
     return {
       loadedComponent: null,
       test: {
@@ -130,17 +96,8 @@ export default {
       return { ...parseData(jsonLayer.data) };
     };
 
-    // let tewt = Object.assign({}, jsonLayer.render);
     let rdr = [...jsonLayer.render];
-    console.log(
-      "this.content",
-      this.content,
-      jsonLayer,
-      rdr
-      // parserRender(rdr)
-      // tewt,
-      // parseRender(tewt)
-    );
+    console.log("this.content", this.content, jsonLayer, rdr);
 
     jsonLayer.render = function (h) {
       // return h("h1", null, `test ${this.prop1}`);
@@ -148,8 +105,6 @@ export default {
     };
 
     console.log("component is", jsonLayer);
-    // jsonLayer.render = parseFunc(jsonLayer.render);
-    // eval(`this.loadedComponent = ${jsonLayer}`);
     this.loadedComponent = jsonLayer;
   },
   computed: {},

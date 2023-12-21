@@ -42,20 +42,6 @@ def get_template(id: int):
                     }
                 }
              },
-             "render2": {
-                "h1": {
-                    "style": {
-                        "color": "red"
-                    },
-                    "children": {
-                        "strong": "strong text",
-                        "span": {
-                            "style": { "textDecoration": "underline" },
-                            "children": "hello world"
-                        }
-                    }
-                }
-             },
             "render": [
                 "h1",
                 {
@@ -67,9 +53,10 @@ def get_template(id: int):
                     ["strong", null, "strong text"],
                     ["a", {
                         "style": {
+                            "color": "#0b58ff",
                             "textDecoration": "underline"
                         }
-                    }, "hello world"]
+                    }, "hello world: ${this.prop1}"]
                 ]
             ]
             }

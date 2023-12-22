@@ -14,7 +14,10 @@
       <div class="tool scale-tool">
         <div class="tool-inner">
           <span>缩放比例</span>
-          <el-slider v-model="tools.scale"></el-slider>
+          <el-slider
+            v-model="tools.scale"
+            @input="handleScaleChange"
+          ></el-slider>
         </div>
       </div>
       <div class="tool preview-tool">
@@ -24,12 +27,16 @@
       </div>
       <div class="tool export-tool">
         <div class="tool-inner">
-          <el-button size="small" type="text" @click="">导出pdf</el-button>
+          <el-button size="small" type="text" @click="handleExport(null, null)"
+            >导出pdf</el-button
+          >
         </div>
       </div>
       <div class="tool print-tool">
         <div class="tool-inner">
-          <el-button size="small" type="text" @click="">打印</el-button>
+          <el-button size="small" type="text" @click="handlePrint"
+            >打印</el-button
+          >
         </div>
       </div>
       <div class="tool clean-tool">
@@ -68,6 +75,9 @@ export default {
     // test loading json data
     template.update(jsondata);
 
+    // 保存这个 template
+    bus.setTemplate(template);
+
     // events
     bus.$on("print", function () {
       console.log("[MainPanel] printing....");
@@ -90,7 +100,48 @@ export default {
       console.log(JSON.stringify(template.getJson()));
     });
   },
-  methods: {},
+  methods: {
+    handleScaleChange(size) {
+      console.log("size", size, bus.template);
+      bus.template.zoom((+size / 100).toFixed(2));
+    },
+    handleExport(name, type = "") {
+      function blobToFile(blob) {
+        return new File([blob], "test.pdf", { type: "application/pdf" });
+      }
+      bus.template
+        .toPdf({ name: "New Print -- export" }, name ?? "测试PDF", {
+          isDownload: false,
+          type: type,
+        })
+        .then((blob) => {
+          console.log("type:", type, blob);
+          const file = blobToFile(blob);
+          const url = URL.createObjectURL(file);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "test.pdf";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        });
+    },
+    handlePrint() {
+      bus.$emit("print");
+      // bus.template.print(
+      //   { name: "New Print" },
+      //   { leftOffset: -1, topOffset: -1 },
+      //   {
+      //     callback: () => {
+      //       console.log("浏览器窗口已打开");
+      //     },
+      //     styleHandler: () => {
+      //       return `<style>.hiprint-printElement-text{color:red !important}</style>`;
+      //     },
+      //   }
+      // );
+    },
+  },
 };
 </script>
 

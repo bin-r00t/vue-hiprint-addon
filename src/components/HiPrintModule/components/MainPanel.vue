@@ -13,6 +13,7 @@
 
 <script>
 import bus from "../bus";
+import jsondata from './test.data.json'
 
 export default {
   name: "HiPrintModuleMainPanel",
@@ -30,6 +31,9 @@ export default {
     });
     template.design("#hiprint-template-area");
 
+    // test loading json data
+    template.update(jsondata);
+
     // events
     bus.$on("print", function () {
       console.log("[MainPanel] printing....");
@@ -46,6 +50,10 @@ export default {
       };
 
       template.print(printData, options, ext);
+    });
+
+    bus.$on("preview", function () {
+      console.log(JSON.stringify(template.getJson()));
     });
   },
   methods: {},

@@ -39,7 +39,8 @@ export default {
   methods: {
     handlePreview() {
       console.log("handlePreview");
-      this.mode = "preview";
+      // this.mode = "preview";
+      bus.$emit('preview')
     },
     handleDesign() {
       console.log("handlePrint");

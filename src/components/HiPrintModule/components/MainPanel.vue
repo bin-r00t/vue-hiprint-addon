@@ -6,21 +6,55 @@
 -->
 
 <template>
-  <div class="hi-print-module-main-panel">
-    <div id="hiprint-template-area"></div>
+  <div class="flex-col hi-print-module-main-panel">
+    <section class="main-panel-area">
+      <div id="hiprint-template-area"></div>
+    </section>
+    <section class="nested-opration-area">
+      <div class="tool scale-tool">
+        <div class="tool-inner">
+          <span>缩放比例</span>
+          <el-slider v-model="tools.scale"></el-slider>
+        </div>
+      </div>
+      <div class="tool preview-tool">
+        <div class="tool-inner">
+          <el-button size="small" type="text" @click="">预览</el-button>
+        </div>
+      </div>
+      <div class="tool export-tool">
+        <div class="tool-inner">
+          <el-button size="small" type="text" @click="">导出pdf</el-button>
+        </div>
+      </div>
+      <div class="tool print-tool">
+        <div class="tool-inner">
+          <el-button size="small" type="text" @click="">打印</el-button>
+        </div>
+      </div>
+      <div class="tool clean-tool">
+        <div class="tool-inner">
+          <el-button size="small" type="danger" @click="">清空画布</el-button>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
 import bus from "../bus";
-import jsondata from './test.data.json'
+import jsondata from "./test.data.json";
 
 export default {
   name: "HiPrintModuleMainPanel",
   components: {},
   props: {},
   data() {
-    return {};
+    return {
+      tools: {
+        scale: 100,
+      },
+    };
   },
   inject: ["hiprint"],
   computed: {},
@@ -62,10 +96,47 @@ export default {
 
 <style scoped lang="scss">
 .hi-print-module-main-panel {
+  height: 100%;
   background: #fff;
+}
+
+.main-panel-area {
+  flex: 1;
   height: 100%;
   padding: 24px;
   overflow-y: scroll;
   overflow-x: scroll;
+}
+
+.nested-opration-area {
+  padding: 0 12px;
+  border-top: 1px solid #ccc;
+}
+
+.tool {
+  display: inline-block;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+
+  &:not(:last-child) {
+    margin-right: 18px;
+  }
+}
+
+.scale-tool {
+  width: 100px;
+}
+
+.tool-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+:deep(.tool-inner) {
+  .el-slider {
+    flex: 1;
+  }
 }
 </style>

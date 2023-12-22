@@ -1,27 +1,36 @@
 <template>
-  <div id="app" style="display: flex; height: 90vh; flex-direction: column">
-    <el-row>
+  <div id="app" style="display: flex; height: 100vh; flex-direction: column">
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        background: #36907a
+      "
+    >
       <el-button type="primary" @click="handlePreview">预览</el-button>
       <el-button type="warning" plain @click="handleDesign">设计</el-button>
       <el-button type="primary" plain @click="handlePrint">打印</el-button>
-    </el-row>
+    </div>
 
-    <el-row
-      class="f-1"
-      style="margin-top: 24px; height: 80%; background: #ccc3"
-    >
-      <DesignView v-if="mode == 'design'" />
-      <PreviewView v-if="mode == 'preview'" />
+    <el-row style="flex: 1; height: 80%; background: #ccc">
+      <HiPrintPage :mode="mode" />
+      <!-- <DesignView v-if="mode == 'design'" />
+      <PreviewView v-if="mode == 'preview'" /> -->
     </el-row>
   </div>
 </template>
 
 <script>
+import HiPrintPage from "./components/HiPrintModule";
 import DesignView from "./DesignView.vue";
 import PreviewView from "./PreviewView.vue";
+
+import bus from './components/HiPrintModule/bus'
 export default {
   name: "App",
-  components: { DesignView, PreviewView },
+  components: { DesignView, PreviewView, HiPrintPage },
   data() {
     return {
       mode: null,
@@ -38,6 +47,7 @@ export default {
     },
     handlePrint() {
       console.log("handlePrint");
+      bus.$emit('print');
     },
   },
 };
@@ -46,13 +56,7 @@ export default {
 <style lang="scss">
 * {
   box-sizing: border-box;
-}
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  margin: 0;
+  padding: 0;
 }
 </style>

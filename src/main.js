@@ -8,6 +8,9 @@ Vue.use(ElementUI);
 Vue.use(VueClodopView);
 Vue.config.productionTip = false;
 
+import { autoConnect, disAutoConnect } from "vue-plugin-hiprint";
+disAutoConnect();
+
 new Vue({
   render: (h) => h(App),
 }).$mount("#app");

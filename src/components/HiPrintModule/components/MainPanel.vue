@@ -22,7 +22,9 @@
       </div>
       <div class="tool preview-tool">
         <div class="tool-inner">
-          <el-button size="small" type="text" @click="">预览</el-button>
+          <el-button size="small" type="text" @click="handlePreview"
+            >预览</el-button
+          >
         </div>
       </div>
       <div class="tool export-tool">
@@ -41,7 +43,9 @@
       </div>
       <div class="tool clean-tool">
         <div class="tool-inner">
-          <el-button size="small" type="danger" @click="">清空画布</el-button>
+          <el-button size="small" type="danger" @click="handleClean"
+            >清空画布</el-button
+          >
         </div>
       </div>
     </section>
@@ -71,75 +75,37 @@ export default {
       settingContainer: "#hiprint-options-area", // 在 right panel 定义
     });
     template.design("#hiprint-template-area");
-
     // test loading json data
     template.update(jsondata);
-
     // 保存这个 template
-    bus.setTemplate(template);
-
-    // events
-    bus.$on("print", function () {
-      console.log("[MainPanel] printing....");
-
-      let printData = { name: "Test Print" };
-      let options = { leftOffset: -1, topOffset: -1 };
-      let ext = {
-        callback: () => {
-          console.log("浏览器窗口已打开");
-        },
-        styleHandler: () => {
-          return `<style>.hiprint-printElement-text{color:red !important}</style>`;
-        },
-      };
-
-      template.print(printData, options, ext);
-    });
-
-    bus.$on("preview", function () {
-      console.log(JSON.stringify(template.getJson()));
-    });
+    bus.$emit("template", template);
   },
   methods: {
     handleScaleChange(size) {
-      console.log("size", size, bus.template);
-      bus.template.zoom((+size / 100).toFixed(2));
+      bus.$emit("scale", size);
     },
     handleExport(name, type = "") {
-      function blobToFile(blob) {
-        return new File([blob], "test.pdf", { type: "application/pdf" });
-      }
-      bus.template
-        .toPdf({ name: "New Print -- export" }, name ?? "测试PDF", {
-          isDownload: false,
-          type: type,
-        })
-        .then((blob) => {
-          console.log("type:", type, blob);
-          const file = blobToFile(blob);
-          const url = URL.createObjectURL(file);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "test.pdf";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        });
+      bus.$emit("pdf", { name, type });
+    },
+    handlePreview() {
+      bus.$emit("preview");
     },
     handlePrint() {
       bus.$emit("print");
-      // bus.template.print(
-      //   { name: "New Print" },
-      //   { leftOffset: -1, topOffset: -1 },
-      //   {
-      //     callback: () => {
-      //       console.log("浏览器窗口已打开");
-      //     },
-      //     styleHandler: () => {
-      //       return `<style>.hiprint-printElement-text{color:red !important}</style>`;
-      //     },
-      //   }
-      // );
+    },
+    handleClean() {
+      try {
+        this.$confirm("确认清空画布？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+        })
+          .then((res) => {
+            bus.$emit("clean");
+          })
+          .catch(() => {});
+      } catch (error) {
+        this.$message.error(`操作失败: ${error}`);
+      }
     },
   },
 };
@@ -153,10 +119,19 @@ export default {
 
 .main-panel-area {
   flex: 1;
-  height: 100%;
   padding: 24px;
   overflow-y: scroll;
   overflow-x: scroll;
+  position: relative;
+}
+
+#hiprint-template-area {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  // width: calc(100% - 20px);
+  // height: calc(100% - 20px);
+  // overflow: scroll;
 }
 
 .nested-opration-area {

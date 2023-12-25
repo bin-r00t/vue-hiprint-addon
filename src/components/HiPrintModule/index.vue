@@ -8,9 +8,9 @@
 <template>
   <div class="hi-print-module-entry">
     <div v-if="mode == 'design'" class="flex-row design-view">
-      <LeftPanel class="" style="flex: 1" />
-      <MainPanel class="" style="flex: 2" />
-      <RightPanel class="" style="flex: 1" />
+      <LeftPanel class="" style="width: 400px; flex-shrink: 0" />
+      <MainPanel class="" style="flex: 1; flex-shrink: 0;" />
+      <RightPanel class="" style="width: 400px; flex-shrink: 0" />
     </div>
   </div>
 </template>

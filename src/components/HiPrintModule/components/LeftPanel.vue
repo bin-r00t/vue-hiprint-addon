@@ -11,8 +11,9 @@
     <el-collapse v-model="activeName" accordion class="left-panel-collapse">
       <!-- 操作  -->
       <el-collapse-item title="操作" name="operations">
-        <el-button @click="handlePreview">预览</el-button>
-        <el-button type="primary" @click="handlePrint">打印</el-button>
+        <el-button type="warning" plain @click="handlePreview">预览</el-button>
+        <el-button type="primary" plain @click="handlePrint">打印</el-button>
+        <el-button plain @click="handleSave">保存</el-button>
       </el-collapse-item>
       <!-- 画布设置  -->
       <el-collapse-item title="画布设置" name="panel-settings">
@@ -27,8 +28,48 @@
               ></el-radio-button>
             </el-radio-group>
           </el-form-item>
-          <!-- 缩放  -->
-          <el-form-item label="缩放比例"> 100% </el-form-item>
+          <!-- 自定义  -->
+          <el-form
+            inline
+            label-position="top"
+            v-if="isCustomSize"
+            :model="customSize"
+          >
+            <h3>自定义</h3>
+            <div
+              style="
+                margin-top: 12px;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+              "
+            >
+              <el-input
+                size="small"
+                clearable
+                v-model="customSize.width"
+                type="number"
+                placeholder="宽度"
+              ></el-input>
+              <i class="el-icon-close" />
+              <el-input
+                size="small"
+                clearable
+                v-model="customSize.height"
+                type="number"
+                placeholder="高度"
+              ></el-input>
+            </div>
+            <el-row style="margin-top: 12px; text-align: right">
+              <el-button
+                type="primary"
+                size="small"
+                plain
+                @click="handleCustomSize"
+                >确定</el-button
+              >
+            </el-row>
+          </el-form>
         </el-form>
       </el-collapse-item>
       <!-- 基本元素  -->
@@ -207,6 +248,8 @@
 </template>
 
 <script>
+import bus from "../bus";
+
 export default {
   name: "HiPrintModuleLeftPanel",
   components: {},
@@ -265,6 +308,11 @@ export default {
       form: {
         panelSize: "A4",
       },
+      customSize: {
+        width: null,
+        height: null,
+      },
+      isCustomSize: false,
       currentPaperSize: {
         type: "A4",
         width: 210,
@@ -279,20 +327,31 @@ export default {
   watch: {
     "form.panelSize"(val) {
       if (val === "自定义") {
-        this.$refs["panel-setting__form"].resetFields();
-        this.$refs["panel-setting__form"].clearValidate();
-        this.$nextTick(() => {
-          this.$refs["panel-setting__form"].validate();
-        });
+        this.isCustomSize = true;
       } else {
+        this.isCustomSize = false;
         const size = this.settings.panelSizeList.find((e) => e.label === val);
         this.setPaper(val, size.value);
       }
     },
   },
   methods: {
-    handlePreview() {},
-    handlePrint() {},
+    handlePreview() {
+      bus.$emit("preview", {});
+    },
+    handlePrint() {
+      bus.$emit("print", {});
+    },
+    handleCustomSize() {
+      if (!this.customSize.width || !this.customSize.height) {
+        this.$message.error("请输入宽度和高度");
+        return;
+      }
+      bus.$emit("size", {
+        width: this.customSize.width,
+        height: this.customSize.height,
+      });
+    },
     /**
      * 设置纸张大小
      * @param type [A3, A4, A5, B3, B4, B5, other]
@@ -300,22 +359,20 @@ export default {
      */
     setPaper(type, value) {
       try {
-        if (this.panelSizeList.find((e) => e.label === type)) {
+        if (this.settings.panelSizeList.find((e) => e.label === type)) {
           this.currentPaperSize = {
             type: type,
             width: value.width,
             height: value.height,
           };
-
-          // TODO: get hiprintTemplate
-          hiprintTemplate.setPaper(value.width, value.height);
+          bus.$emit("size", { width: value.width, height: value.height });
         } else {
           this.currentPaperSize = {
             type: "other",
             width: value.width,
             height: value.height,
           };
-          hiprintTemplate.setPaper(value.width, value.height);
+          bus.$emit("size", { width: value.width, height: value.height });
         }
       } catch (error) {
         this.$message.error(`操作失败: ${error}`);
